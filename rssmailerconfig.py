@@ -200,7 +200,7 @@ class RSSMailerEnvironment():
         if self.settLocalConfig:
             self.workDir = os.path.dirname(os.path.realpath(sys.argv[0]))
         else:
-            self.workDir = os.path.join(os.environ['HOME'], u'.rssmailer')
+            self.workDir = os.path.join(os.path.expanduser('~'), u'.rssmailer')
 
         self.feedDir = os.path.join(self.workDir, u'feeds')
         self.feedListFileName = os.path.join(self.workDir, u'feeds.cfg')
