@@ -253,12 +253,12 @@ def add_feeds(env, feedSources, opts):
 
         return nfeedadded
 
-    __add_feeds()
+    nfeedsadded = __add_feeds()
 
-    if nfeedadded:
+    if nfeedsadded:
         feedSources.save(env)
 
-    print('%s feed(s) added' % ('no' if not nfeedadded else '%d' % nfeedadded))
+    print('%s feed(s) added' % ('no' if not nfeedadded else '%d' % nfeedsadded))
 
 
 def delete_feeds(env, feedSources, opts):
