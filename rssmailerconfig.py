@@ -21,7 +21,7 @@
     along with RSSMailer.  If not, see <http://www.gnu.org/licenses/>."""
 
 import sys
-import os.path
+import os, os.path
 from collections import namedtuple
 from configparser import RawConfigParser
 from locale import getdefaultlocale
@@ -41,7 +41,7 @@ DOWNLOAD_STREAMS = 10
 
 CONFIG_EXAMPLE = u"""[settings]
 ; количество одновременных загрузок (если не указано - %d)
-downloads = N
+downloads = 10
 
 [mail]
 ; адрес отправителя
@@ -200,7 +200,7 @@ class RSSMailerEnvironment():
         if self.settLocalConfig:
             self.workDir = os.path.dirname(os.path.realpath(sys.argv[0]))
         else:
-            self.workDir = os.path.expanduser(u'~/.rssmailer')
+            self.workDir = os.path.join(os.environ['HOME'], u'.rssmailer')
 
         self.feedDir = os.path.join(self.workDir, u'feeds')
         self.feedListFileName = os.path.join(self.workDir, u'feeds.cfg')

@@ -19,7 +19,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
 
-RELEASE = '20170208-2'
+RELEASE = '20170208-3'
 APP_TITLE = 'RSSMailer'
 APP_RELEASE = u'%s v%s' % (APP_TITLE, RELEASE)
 
@@ -149,6 +149,10 @@ def download_feeds(env, feedSources):
 
 
 def list_feeds(env, feedSources):
+    if not feedSources:
+        print('No feeds.')
+        exit(1)
+
     COLS = 3
 
     nfeeds = len(feedSources)
