@@ -214,7 +214,8 @@ class RSSMailerEnvironment():
             os.mkdir(self.feedDir)
 
         if not os.path.isfile(self.feedListFileName):
-            raise ValueError(u'feed list file "%s" is not found' % self.feedListFileName)
+            #raise ValueError
+            print(u'Warning! Feed list file "%s" is not found' % self.feedListFileName)
 
         if not os.path.isfile(self.configFileName):
             with open(self.configFileName, 'w+', encoding=IOENCODING) as f:

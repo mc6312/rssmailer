@@ -1,5 +1,5 @@
 pack = 7z a -mx=9
-docs = COPYING README
+docs = COPYING README LICENSE README.md
 arcname = rssmailer
 arcx = .7z
 configdir = ~/.rssmailer
