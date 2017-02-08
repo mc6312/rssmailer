@@ -410,6 +410,13 @@ class RSSFeedSources(list):
 
         cfg.save()
 
+    def find_title(self, title):
+        title = title.lower()
+
+        for feed in self:
+            if feed.title.lower == title:
+                return feed
+
 
 class HTMLText(HTMLParser):
     """Вспомогательный класс для удаления разметки из HTML"""

@@ -19,7 +19,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
 
-RELEASE = '20170208-1'
+RELEASE = '20170208-2'
 APP_TITLE = 'RSSMailer'
 APP_RELEASE = u'%s v%s' % (APP_TITLE, RELEASE)
 
@@ -195,6 +195,10 @@ def get_int_opts(opts, nmax):
 
 
 def disable_feeds(env, feedSources, opts, flag):
+    if not feedSources:
+        print('No feeds. Nothing to disable')
+        exit(1)
+
     nums, e = get_int_opts(opts, len(feedSources))
     if e:
         print(e)
@@ -209,20 +213,28 @@ def disable_feeds(env, feedSources, opts, flag):
 def add_feeds(env, feedSources, opts):
     nfeeds = len(feedSources)
 
+    def __add_feed(furl, ftitle):
+        if feedSources.find_title(ftitle):
+            return 0
+
+        feedSources.append(RSSFeed(env, furl, ftitle, DOWNLOAD_TIMEOUT, False))
+        return 1
+
     def __add_feeds():
         nopts = len(opts)
+        nfeedadded = 0
 
         if nopts == 0:
             furl = input('Feed URL (empty line to cancel): ').strip()
             if not furl:
-                return
+                return nfeedadded
 
         if nopts < 2:
             ftitle = input('Feed title (empty line to cancel): ').strip()
             if not ftitle:
-                return
+                return nfeedadded
 
-            feedSources.append(RSSFeed(env, furl, ftitle, DOWNLOAD_TIMEOUT, False))
+            nfeedadded += __add_feed(furl, ftitle)
         else:
             NPARAMS = 2
             ix = 0
@@ -230,14 +242,14 @@ def add_feeds(env, feedSources, opts):
                 furl, ftitle = opts[ix:ix+NPARAMS]
                 nopts -= NPARAMS
 
-                feedSources.append(RSSFeed(env, furl, ftitle, DOWNLOAD_TIMEOUT, False))
+                nfeedadded += __add_feed(furl, ftitle)
 
             if nopts % NPARAMS:
                 print('Invalid number of parameters (must be power of two)')
-                return
+
+        return nfeedadded
 
     __add_feeds()
-    nfeedadded = len(feedSources)- nfeeds
 
     if nfeedadded:
         feedSources.save(env)
@@ -246,6 +258,10 @@ def add_feeds(env, feedSources, opts):
 
 
 def delete_feeds(env, feedSources, opts):
+    if not feedSources:
+        print('No feeds. Nothing to delete')
+        exit(1)
+
     nums, e = get_int_opts(opts, len(feedSources))
     #print(nums, e)
     if e:
