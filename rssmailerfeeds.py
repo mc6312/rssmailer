@@ -414,7 +414,7 @@ class RSSFeedSources(list):
         title = title.lower()
 
         for feed in self:
-            if feed.title.lower == title:
+            if feed.title.lower() == title:
                 return feed
 
 

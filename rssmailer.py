@@ -219,6 +219,7 @@ def add_feeds(env, feedSources, opts):
 
     def __add_feed(furl, ftitle):
         if feedSources.find_title(ftitle):
+            print('Feed "%s" already exists.')
             return 0
 
         feedSources.append(RSSFeed(env, furl, ftitle, DOWNLOAD_TIMEOUT, False))
