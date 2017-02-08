@@ -399,7 +399,7 @@ class RSSFeedSources(list):
         cfg = CfgParser(env.feedListFileName)
 
         for feed in self:
-            if not cfg.has_section(feed.title)
+            if not cfg.has_section(feed.title):
                 cfg.add_section(feed.title)
 
             cfg.set(feed.title, self.CV_URL, feed.url)
