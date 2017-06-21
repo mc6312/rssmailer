@@ -19,7 +19,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
 
-RELEASE = '20170621-3'
+RELEASE = '20170621-4'
 APP_TITLE = 'RSSMailer'
 APP_RELEASE = u'%s v%s' % (APP_TITLE, RELEASE)
 
@@ -116,7 +116,7 @@ def download_feeds(env, feedSources):
                     # шлём обычным образом письма со скачанными лентами
                     if feed.error:
                         errfeeds.append(feed)
-                    else:
+                    elif feed.newItems > 0:
                         mbody = feed_to_html(feed)
 
                         msubj = u'%s%s (%d)%s' % (env.mailSubjectPrefix,
