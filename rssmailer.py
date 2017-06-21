@@ -19,7 +19,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
 
-RELEASE = '20170208-4'
+RELEASE = '20170621-1'
 APP_TITLE = 'RSSMailer'
 APP_RELEASE = u'%s v%s' % (APP_TITLE, RELEASE)
 
@@ -110,25 +110,44 @@ def download_feeds(env, feedSources):
 
             dltime = time()
             try:
-                for feed in feeds:
-                    mbody = feed_to_html(feed)
+                errfeeds = []
 
-                    msubj = u'%s%s (%d)%s' % (env.mailSubjectPrefix,
-                                        feed.title, feed.newItems,
-                                        env.mailSubjectSuffix)
+                for feed in feeds:
+                    # шлём обычным образом письма со скачанными лентами
+                    if feed.error is None:
+                        mbody = feed_to_html(feed)
+
+                        msubj = u'%s%s (%d)%s' % (env.mailSubjectPrefix,
+                                            feed.title, feed.newItems,
+                                            env.mailSubjectSuffix)
+
+                        if env.settDontSendMail:
+                            if ddir:
+                                with open(os.path.join(ddir, u'debug%.x.html' % hash(msubj)), 'w+', encoding=IOENCODING) as f:
+                                    f.write(mbody)
+
+                            mailIsSent = False #!!! при фейковой отправке новость НЕ считаем прочитанной !!!
+                        else:
+                            mailIsSent = send_message(env, msubj, None, mbody)
+
+                        if mailIsSent:
+                            sendCount += 1
+                            feed.save_guids()
+                    else:
+                        errfeeds.append(feed)
+
+                if errfeeds:
+                    # шлём письмо про ошибки скачивания
+                    mbody = u'\n'.join(map(lambda f: u'%s (%s): %s error' % (f.title, f.url, f.errortype), errfeeds))
+
+                    msubj = u'Error downloading %d feed(s)' % len(errfeeds)
 
                     if env.settDontSendMail:
                         if ddir:
-                            with open(os.path.join(ddir, u'debug%.x.html' % hash(msubj)), 'w+', encoding=IOENCODING) as f:
+                            with open(os.path.join(ddir, u'debug-errors.txt'), 'w+', encoding=IOENCODING) as f:
                                 f.write(mbody)
-
-                        mailIsSent = False #!!! при фейковой отправке новость НЕ считаем прочитанной !!!
                     else:
-                        mailIsSent = send_message(env, msubj, None, mbody)
-
-                    if mailIsSent:
-                        sendCount += 1
-                        feed.save_guids()
+                        send_message(env, msubj, mbody, None)
 
             finally:
                 dltime = time() - dltime

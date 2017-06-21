@@ -77,8 +77,8 @@ def download_url(url, timeout, fstdout, fstderr):
     fstderr - файловый объект для прочего вывода внешнего процесса
     Для загрузки вызывается внешний процесс, выдающий данные в stdout.
 
-    В случае успеха ф-я возвращает None, иначе - строку с сообщением
-    об ошибке."""
+    В случае успеха возвращает None, в случае ошибки -
+    строку с сообщением об ошибке."""
 
     # если когда-нито будет возможность настройки на качалку, отличную от wget
     # это нужно будет вынести в конфиг
@@ -152,7 +152,15 @@ class RSSFeed(rssparser.RSSHandler):
         self.delete = False # костыль для удалятора в осн. модуле
 
         self.dltime = 0.0
+
+        # текст сообщения об ошибке (скачивания или разбора)
         self.error = None
+        # тип ошибки (в виде строки)
+        self.errortype = None
+
+    def __set_error(self, emsg, etype):
+        self.error = emsg
+        self.errortype = etype
 
     def load_guids(self):
         """Файл истории событий. В нем хранятся guid и link.
@@ -229,6 +237,8 @@ class RSSFeed(rssparser.RSSHandler):
         """Засасывает ленту, отбрасывая ранее
         загруженные элементы с помощью списка guid'ов"""
 
+        self.__set_error(None, None)
+
         try:
             self.load_guids()
             del self.items[:]
@@ -246,7 +256,7 @@ class RSSFeed(rssparser.RSSHandler):
                         es = download_url(self.url, self.timeout, tempf, nulldev)
                         #print('end download:', es)
                         if es:
-                            self.error = es
+                            self.__set_error(es, 'download')
                             return False
 
                     tempf.flush()
@@ -267,7 +277,7 @@ class RSSFeed(rssparser.RSSHandler):
         #except (SAXParseException, OSError), msg:
         except Exception as ex:
             # гребём всё
-            self.error = str(ex)
+            self.__set_error(str(ex), 'parse')
             #print(self.error)
             return False
 
@@ -289,8 +299,9 @@ class RSSLoaderThread(threading.Thread):
 
 
 def load_feeds(env, feeds):
-    """Грузит все ленты из списка feeds пачками по maxdownloads.
-    Возвращает список успешно загруженных."""
+    """Грузит все ленты (экземпляров RSSFeed) из списка feeds пачками по maxdownloads.
+    Возвращает список лент, у которых поле skip == False (т.е. в т.ч.
+    лент с ошибками загрузки!)."""
 
     feeds = list(filter(lambda f: not f.skip, feeds))
 
@@ -332,13 +343,17 @@ def load_feeds(env, feeds):
             #while filter(lambda t: t.is_alive(), loaders):
             #    sleep(0.1)
 
+            for ldr in loaders:
+                if ldr.error:
+                    env.logger.error('downloader thread error (%s), feed "%s"' % (ldr.error, ldr.feed.url))
+
             # какаем в лог результатами текущей порции закачек
             for fsubix, feed in enumerate(fbundle):
                 fsubix += 1
                 feedn = u'feed %s "%s"' % (fnumfmt % (fix + fsubix), feed.title)
 
                 if feed.error:
-                    env.logger.error(u'error downloading %s - %s' % (feedn, feed.error))
+                    env.logger.error(u'%s error %s - %s' % (feed.errortype, feedn, feed.error))
                 else:
                     env.logger.debug(u'%s downloaded by %d sec., %s new(s)' % (feedn, feed.dltime, (u'%d' % feed.newItems) if feed.newItems else u'no'))
 
@@ -350,11 +365,14 @@ def load_feeds(env, feeds):
 
         env.logger.info(u'total download time is %d sec.' % dltime)
 
-    ret = list(filter(lambda f: f.error is None and f.newItems, feeds))
+    nHasNews = 0
+    for f in feeds:
+        if f.error is None and f.newItems:
+            nHasNews += 1
 
-    env.logger.info(u'feeds with news: %d' % len(ret))
+    env.logger.info(u'feeds with news: %d' % nHasNews)
 
-    return ret
+    return feeds
 
 
 class RSSFeedSources(list):

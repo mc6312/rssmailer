@@ -43,6 +43,10 @@ CONFIG_EXAMPLE = u"""[settings]
 ; количество одновременных загрузок (если не указано - %d)
 downloads = 10
 
+; отправлять ли письма об ошибках скачивания лент
+; no/yes    - нет/да
+mail-errors = yes
+
 [mail]
 ; адрес отправителя
 from = sender@someserver.net
@@ -149,6 +153,18 @@ class CfgParser(RawConfigParser):
         else:
             return default
 
+    def get_option(self, section, option, optdict, default=None):
+        """Возвращает значение из словаря optdict, где ключи - строки
+        значений из файла настроек, а значения - возвращаемые значения.
+        Если переменная option отсутствует в файле настроек,
+        или ее значения нет в словаре, метод возвращает значение default."""
+
+        if self.has_option(section, option):
+            v = self.get(section, option)
+            return optdict[v] if v in optdict else default
+        else:
+            return default
+
 
 class RSSMailerEnvironment():
     CS_MAIL = u'mail'
@@ -165,9 +181,13 @@ class RSSMailerEnvironment():
         'delete':WORK_MODE_DELETE,
         'sendmail':WORK_MODE_SENDMAIL}
 
+    SEND_ERROR_MAIL_DEFAULT = True
+
     def __init__(self):
         # defaults
         self.settDownloads = DOWNLOAD_STREAMS
+
+        self.settSendErrorMail = self.SEND_ERROR_MAIL_DEFAULT
 
         self.mailFrom = None
         self.mailTo = []
@@ -193,6 +213,57 @@ class RSSMailerEnvironment():
         self.workMode = None
 
         self.logger = None
+
+    def __str__(self):
+        # для отладки
+        return(u'''* %s: *
+self.settDownloads = %s
+
+self.settSendErrorMail = %s
+
+self.mailFrom = %s
+self.mailTo = %s
+self.mailHost = %s
+self.mailLogin = %s
+self.mailPassword = %s
+self.mailTLS = %s
+self.mailCharset = %s
+self.mailSubjectPrefix = %s
+self.mailSubjectSuffix = %s
+
+self.settLogToSyslog = %s
+self.settLogDebug = %s
+self.settDontSendMail = %s
+self.settLocalConfig = %s
+
+self.workDir = %s
+self.feedDir = %s
+self.feedListFileName = %s
+self.configFileName = %s
+self.logFileName = %s
+
+self.workMode = %s''' % (self.__class__.__name__,
+        self.settDownloads,
+        self.settSendErrorMail,
+        self.mailFrom,
+        self.mailTo,
+        self.mailHost,
+        self.mailLogin,
+        self.mailPassword,
+        self.mailTLS,
+        self.mailCharset,
+        self.mailSubjectPrefix,
+        self.mailSubjectSuffix,
+        self.settLogToSyslog,
+        self.settLogDebug,
+        self.settDontSendMail,
+        self.settLocalConfig,
+        self.workDir,
+        self.feedDir,
+        self.feedListFileName,
+        self.configFileName,
+        self.logFileName,
+        self.workMode))
 
     def load_settings(self):
         """Загрузка настроек"""
@@ -228,6 +299,8 @@ class RSSMailerEnvironment():
 
         #
         self.settDownloads = cfg.get_int(self.CS_SETTINGS, u'downloads', DOWNLOAD_STREAMS, 1, 128)
+
+        self.settSendErrorMail = cfg.get_bool(self.CS_SETTINGS, u'mail-errors', self.SEND_ERROR_MAIL_DEFAULT)
 
         #
         self.mailFrom = cfg.get_str(self.CS_MAIL, u'from')
