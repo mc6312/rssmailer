@@ -8,8 +8,6 @@ srcarcname = $(arcname)-src
 feeddir = $(configdir)/feeds
 pyz=$(arcname).pyz
 pyztmp = $(arcname).zip
-installhost=informer:/home/vsvm/
-installuser=vsvm
 
 src-archive: 
 	$(pack) $(srcarcname)$(arcx) *.py *. Makefile $(docs) subscriptions* backup-me *.geany
@@ -28,7 +26,7 @@ update:
 	7z x -y $(xchgdir)$(srcarcname)$(arcx)
 install:
 	make zip
-	scp -l $(installuser) $(pyz) $(installhost)
+	./install.sh $(pyz)
 	rm $(pyz)
 settings-archive:
 	$(pack) -r $(arcname)-settings$(arcx) $(configdir)
