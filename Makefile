@@ -10,7 +10,7 @@ pyz=$(arcname).pyz
 pyztmp = $(arcname).zip
 
 src-archive: 
-	$(pack) $(srcarcname)$(arcx) *.py *. Makefile $(docs) subscriptions* backup-me *.geany
+	$(pack) $(srcarcname)$(arcx) *.py *.sh *. Makefile $(docs) subscriptions* backup-me *.geany
 zip:
 	$(pack) -tzip $(pyztmp) *.py
 	@echo '#!/usr/bin/env python3' >$(pyz)
