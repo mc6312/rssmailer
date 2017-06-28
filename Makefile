@@ -8,10 +8,9 @@ srcarcname = $(arcname)-src
 feeddir = $(configdir)/feeds
 pyz=$(arcname).pyz
 pyztmp = $(arcname).zip
-installhost=indignus:/home/vsvm/
 
 src-archive: 
-	$(pack) $(srcarcname)$(arcx) *.py *. Makefile $(docs) subscriptions* backup-me *.geany
+	$(pack) $(srcarcname)$(arcx) *.py *.sh *. Makefile $(docs) subscriptions* backup-me *.geany
 zip:
 	$(pack) -tzip $(pyztmp) *.py
 	@echo '#!/usr/bin/env python3' >$(pyz)
@@ -27,7 +26,7 @@ update:
 	7z x -y $(xchgdir)$(srcarcname)$(arcx)
 install:
 	make zip
-	scp $(pyz) $(installhost)
+	./install.sh $(pyz)
 	rm $(pyz)
 settings-archive:
 	$(pack) -r $(arcname)-settings$(arcx) $(configdir)

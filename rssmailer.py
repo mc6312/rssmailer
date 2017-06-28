@@ -19,7 +19,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
 
-RELEASE = '20170621-4'
+RELEASE = '20170628-0'
 APP_TITLE = 'RSSMailer'
 APP_RELEASE = u'%s v%s' % (APP_TITLE, RELEASE)
 
@@ -136,7 +136,7 @@ def download_feeds(env, feedSources):
                             sendCount += 1
                             feed.save_guids()
 
-                if errfeeds:
+                if errfeeds and env.settSendErrorMail:
                     # шлём письмо про ошибки скачивания
                     mbody = u'\n'.join(map(lambda f: u'%s (%s): %s error' % (f.title, f.url, f.errortype), errfeeds))
 
