@@ -92,7 +92,7 @@ class RSSHandler(SAXContentHandler):
         TAG_DESC:TAG_DESC, TAG_ATOM_DESC:TAG_DESC}
     FIELDS = {TAG_GUID:FLD_GUID, TAG_LINK:FLD_LINK, TAG_TITLE:FLD_TITLE,
         TAG_DATE:FLD_DATE, TAG_DESC:FLD_DESC}
-    TEXT_FIELDS = {FLD_GUID:False, FLD_LINK:False, FLD_TITLE:True, FLD_DATE:False, FLD_DESC:True}
+    TEXT_FIELDS = {FLD_GUID:True, FLD_LINK:True, FLD_TITLE:True, FLD_DATE:False, FLD_DESC:True}
 
     def __init__(self):
         SAXContentHandler.__init__(self)
@@ -136,7 +136,7 @@ class RSSHandler(SAXContentHandler):
         print(u'- %s -' % name)
 
     def characters(self, content):
-        if (self.isItem) and (self.curField != None):
+       if (self.isItem) and (self.curField != None):
             if self.TEXT_FIELDS[self.curField]:
                 # содержимое текстовых полей добавляем к текущему
                 # содержимому без изменения -
@@ -171,7 +171,8 @@ if __name__ == '__main__':
         def unparsedEntityDecl(self, name, publicId, systemId, ndata):
             pass #print name, publicId, systemId, ndata
         def flush_item(self, item):
-            print(item.guid)
+            #print('guid', item.guid)
+            print('link', item.link)
         """def startElement(self, name, attrs):
             if name == u'item':
                 print 'start of "%s"' % name, attrs.getNames()"""
@@ -186,7 +187,8 @@ if __name__ == '__main__':
 
 
 
-    url = 'http://ixbt.com/export/hardnews.rss'
+    #url = 'http://ixbt.com/export/hardnews.rss'
+    url = 'http://habrahabr.ru/rss/'
     #url = 'http://ru_d70.livejournal.com/data/rss'
 
     parser = make_parser()
@@ -194,4 +196,12 @@ if __name__ == '__main__':
     parser.setContentHandler(handler)
     parser.setEntityResolver(handler)
     parser.setErrorHandler(handler)
-    parser.parse(urllib.request.urlopen(url, timeout=10))
+
+    rq = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'}) # дабы сайты не возбухали на робота
+    f = urllib.request.urlopen(rq, timeout=10)
+    """try:
+        s = f.read().decode('utf-8')
+        print(s)
+    finally:
+        f.close()"""
+    parser.parse(f)
