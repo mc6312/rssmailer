@@ -28,6 +28,8 @@ install:
 	make zip
 	./install.sh $(pyz)
 	rm $(pyz)
+commit:
+	./do_commit.sh
 settings-archive:
 	$(pack) -r $(arcname)-settings$(arcx) $(configdir)
 reset-feeds:
