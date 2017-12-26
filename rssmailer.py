@@ -19,7 +19,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
 
-RELEASE = '20170628-0'
+RELEASE = '20171226-0'
 APP_TITLE = 'RSSMailer'
 APP_RELEASE = u'%s v%s' % (APP_TITLE, RELEASE)
 
@@ -249,27 +249,33 @@ def add_feeds(env, feedSources, opts):
         nfeedadded = 0
 
         if nopts == 0:
+            # командная строка пуста - добавляем одну ленту вручную
+
             furl = input('Feed URL (empty line to cancel): ').strip()
             if not furl:
-                return nfeedadded
+                return 0
 
-        if nopts < 2:
             ftitle = input('Feed title (empty line to cancel): ').strip()
             if not ftitle:
-                return nfeedadded
+                return 0
 
             nfeedadded += __add_feed(furl, ftitle)
         else:
+            # в командной строке есть аргументы - берем из них пары "url, title"
+            # если остался непарный - на него ругаемся, но не падаем с ошибкой
+
             NPARAMS = 2
             ix = 0
-            while nopts > 0:
+            while True:
+                if nopts < 2:
+                    if nopts > 0:
+                        print('Required parameter missing (pairs of arguments are required)')
+                    break
+
                 furl, ftitle = opts[ix:ix+NPARAMS]
                 nopts -= NPARAMS
 
                 nfeedadded += __add_feed(furl, ftitle)
-
-            if nopts % NPARAMS:
-                print('Invalid number of parameters (must be power of two)')
 
         return nfeedadded
 
