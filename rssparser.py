@@ -3,7 +3,7 @@
 
 """ rssparser.py
 
-    Copyright 2013-2017 mc6312
+    Copyright 2013-2019 mc6312
 
     This file is part of RSSMailer (or other program).
 
@@ -35,9 +35,17 @@ from datetime import datetime
 
 # RSS RFC-2822 date format: Tue, 2 Jul 2013 11:49:23 +0400
 rx_rfc2822time = re_compile(r'\w+, (\d+ \w+ \d+ \d+:\d+)', RE_UNICODE)
+RFC2822_TIME_FMT = '%d %b %Y %H:%M'
 
 # ATOM date format: 2014-06-24T16:11:28+02:00
 rx_atomtime = re_compile(r'(\w+-\w+-\w+T\w+:\w+):\w+(\+\w+:\w+)?', RE_UNICODE)
+ATOM_TIME_FMT = '%Y-%m-%dT%H:%M'
+
+
+TIME_FORMATS = (
+    (rx_rfc2822time, RFC2822_TIME_FMT),
+    (rx_atomtime, ATOM_TIME_FMT),
+    )
 
 
 def parse_time(s):
@@ -47,15 +55,17 @@ def parse_time(s):
     падать всей качалке из-за криворуких уеб-программистов западло.
     Timezone пока не поддерживается."""
 
-    r = rx_rfc2822time.match(s)
-    if r:
-        return datetime.strptime(r.group(1), '%d %b %Y %H:%M')
+    try:
+        for rx, fmt in TIME_FORMATS:
+            r = rx.match(s)
+            if r:
+                return datetime.strptime(r.group(1), fmt)
 
-    r = rx_atomtime.match(s)
-    if r:
-        return datetime.strptime(r.group(1), '%Y-%m-%dT%H:%M')
+    except ValueError:
+        # костыль для лент с неправильным форматом даты, ибо лучше
+        # скачать ленту без дат, чем ваще не скачать
+        pass
 
-    #raise ValueError, u'"%s" - string is not RFC 2822 timestamp' % s
     return datetime.now()
 
 
@@ -188,7 +198,8 @@ if __name__ == '__main__':
 
 
     #url = 'http://ixbt.com/export/hardnews.rss'
-    url = 'http://habrahabr.ru/rss/'
+    #url = 'http://habrahabr.ru/rss/'
+    url = 'https://getpen.ru/rss.xml'
     #url = 'http://ru_d70.livejournal.com/data/rss'
 
     parser = make_parser()

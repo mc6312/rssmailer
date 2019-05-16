@@ -3,7 +3,7 @@
 
 """ rssmailer.py
 
-    Copyright 2013-2017 mc6312
+    Copyright 2013-2019 mc6312
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
 
-RELEASE = '20171226-0'
+RELEASE = '20190516-2'
 APP_TITLE = 'RSSMailer'
 APP_RELEASE = u'%s v%s' % (APP_TITLE, RELEASE)
 
