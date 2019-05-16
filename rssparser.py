@@ -171,9 +171,6 @@ class RSSHandler(SAXContentHandler):
 
                     self.curItem[self.curField] = content
 
-    def processingInstruction(self, target, data):
-        print(f'processingInstruction: "{target}", "{data}"')
-
     def flush_item(self, item):
         raise NotImplementedError(u'RSSHandler.flush_item()')
 

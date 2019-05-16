@@ -10,13 +10,13 @@ pyz=$(arcname).pyz
 pyztmp = $(arcname).zip
 version = $(shell python3 -c 'from rssmailer import RELEASE; print(RELEASE)')
 
-src-archive:
-	$(pack) $(srcarcname)$(arcx) *.py *.sh *. Makefile $(docs) subscriptions* backup-me *.geany
 zip:
 	$(pack) -tzip $(pyztmp) *.py
 	@echo '#!/usr/bin/env python3' >$(pyz)
 	cat $(pyztmp) >>$(pyz)
 	rm $(pyztmp)
+src-archive:
+	$(pack) $(srcarcname)$(arcx) *.py *.sh *. Makefile $(docs) subscriptions* backup-me *.geany
 archive:
 	make zip
 	$(pack) $(arcname)$(arcx) $(pyz) $(docs)
