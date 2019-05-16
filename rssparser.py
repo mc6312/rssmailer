@@ -3,7 +3,7 @@
 
 """ rssparser.py
 
-    Copyright 2013-2017 mc6312
+    Copyright 2013-2019 mc6312
 
     This file is part of RSSMailer (or other program).
 
@@ -33,11 +33,17 @@ from collections import namedtuple
 from re import compile as re_compile, UNICODE as RE_UNICODE
 from datetime import datetime
 
+import locale
+
 # RSS RFC-2822 date format: Tue, 2 Jul 2013 11:49:23 +0400
 rx_rfc2822time = re_compile(r'\w+, (\d+ \w+ \d+ \d+:\d+)', RE_UNICODE)
+RFC2882_TIME = '%d %b %Y %H:%M'
 
 # ATOM date format: 2014-06-24T16:11:28+02:00
 rx_atomtime = re_compile(r'(\w+-\w+-\w+T\w+:\w+):\w+(\+\w+:\w+)?', RE_UNICODE)
+
+
+DEF_LC_TIME = locale.getlocale(locale.LC_TIME)
 
 
 def parse_time(s):
@@ -49,7 +55,20 @@ def parse_time(s):
 
     r = rx_rfc2822time.match(s)
     if r:
-        return datetime.strptime(r.group(1), '%d %b %Y %H:%M')
+        r = r.group(1)
+
+        try:
+            locale.setlocale(locale.LC_TIME, DEF_LC_TIME)
+            return datetime.strptime(r, RFC2882_TIME)
+        except ValueError:
+            # грязный хак для сайтов, выдающих RSS с датами в национальной кодировке
+            # пока (и скорее всего навсегда) поддерживается только ru_RU.UTF-8
+            locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
+
+            try:
+                return datetime.strptime(r, RFC2882_TIME)
+            finally:
+                locale.setlocale(locale.LC_TIME, DEF_LC_TIME)
 
     r = rx_atomtime.match(s)
     if r:
@@ -152,6 +171,9 @@ class RSSHandler(SAXContentHandler):
 
                     self.curItem[self.curField] = content
 
+    def processingInstruction(self, target, data):
+        print(f'processingInstruction: "{target}", "{data}"')
+
     def flush_item(self, item):
         raise NotImplementedError(u'RSSHandler.flush_item()')
 
@@ -188,7 +210,8 @@ if __name__ == '__main__':
 
 
     #url = 'http://ixbt.com/export/hardnews.rss'
-    url = 'http://habrahabr.ru/rss/'
+    #url = 'http://habrahabr.ru/rss/'
+    url = 'https://getpen.ru/rss.xml'
     #url = 'http://ru_d70.livejournal.com/data/rss'
 
     parser = make_parser()

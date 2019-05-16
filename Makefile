@@ -8,8 +8,9 @@ srcarcname = $(arcname)-src
 feeddir = $(configdir)/feeds
 pyz=$(arcname).pyz
 pyztmp = $(arcname).zip
+version = $(shell python3 -c 'from rssmailer import RELEASE; print(RELEASE)')
 
-src-archive: 
+src-archive:
 	$(pack) $(srcarcname)$(arcx) *.py *.sh *. Makefile $(docs) subscriptions* backup-me *.geany
 zip:
 	$(pack) -tzip $(pyztmp) *.py
@@ -29,7 +30,7 @@ install:
 	./install.sh $(pyz)
 	rm $(pyz)
 commit:
-	./do_commit.sh
+	git commit -a -uno -m "$(version)"
 settings-archive:
 	$(pack) -r $(arcname)-settings$(arcx) $(configdir)
 reset-feeds:
