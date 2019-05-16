@@ -19,7 +19,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
 
-RELEASE = '20190516-1'
+RELEASE = '20190516-2'
 APP_TITLE = 'RSSMailer'
 APP_RELEASE = u'%s v%s' % (APP_TITLE, RELEASE)
 
