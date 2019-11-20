@@ -126,7 +126,7 @@ class RSSFeed(rssparser.RSSHandler):
     # link - ссылка на запись из ленты
     # dhash - хэш описания записи
 
-    def __init__(self, env, url, title, timeout, skip=False):
+    def __init__(self, env, url, title, timeout, longdesc, skip):
         rssparser.RSSHandler.__init__(self)
 
         self.url = url
@@ -149,6 +149,7 @@ class RSSFeed(rssparser.RSSHandler):
         self.title = title
         self.timeout = timeout
         self.skip = skip
+        self.longdesc = longdesc
         self.delete = False # костыль для удалятора в осн. модуле
 
         self.dltime = 0.0
@@ -376,10 +377,11 @@ def load_feeds(env, feeds):
 
 
 class RSSFeedSources(list):
-    CV_SKIP = u'skip'
+    CV_SKIP = 'skip'
     #CO_SKIP = set((u'yes', u'true'))
-    CV_URL = u'url'
-    CV_TIMEOUT = u'timeout'
+    CV_URL = 'url'
+    CV_TIMEOUT = 'timeout'
+    CV_LONGDESC = 'longdesc'
 
     def load(self, env):
         """Разбирает файл с именем feedListFileName, возвращает
@@ -408,7 +410,9 @@ class RSSFeedSources(list):
             if furl in urls:
                 continue
 
-            feed = RSSFeed(env, furl, ftitle, ftimeout, fskip)
+            flongdesc = cfg.get_bool(ftitle, self.CV_LONGDESC)
+
+            feed = RSSFeed(env, furl, ftitle, ftimeout, flongdesc, fskip)
             self.append(feed)
 
     def save(self, env):
@@ -421,7 +425,8 @@ class RSSFeedSources(list):
                 cfg.add_section(feed.title)
 
             cfg.set(feed.title, self.CV_URL, feed.url)
-            cfg.set(feed.title, self.CV_SKIP, 'yes' if feed.skip else 'no')
+            cfg.set_bool(feed.title, self.CV_SKIP, feed.skip)
+            cfg.set_bool(feed.title, self.CV_LONGDESC, feed.longdesc)
 
             if feed.timeout != DOWNLOAD_TIMEOUT:
                 cfg.set(feed.title, self.CV_TIMEOUT, str(feed.timeout))

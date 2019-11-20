@@ -19,7 +19,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
 
-RELEASE = '20190516-2'
+RELEASE = '20191120-0'
 APP_TITLE = 'RSSMailer'
 APP_RELEASE = u'%s v%s' % (APP_TITLE, RELEASE)
 
@@ -31,8 +31,6 @@ from rssmailersender import *
 from rssmailerlogger import log_exception_info
 from logging import shutdown as logging_shutdown
 
-
-MAX_DESCRIPTION_CHARS = 512
 
 def html_document(body):
     return u"""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -57,14 +55,18 @@ span.mark { border:1pt solid #fff; width:1ch }
 
 
 def feed_to_html(feed):
-    """Форматирование rssmailfeeds.RSSFeed.items в HTML"""
+    """Форматирование содержимого feed.items в HTML.
+
+    feed    - экземпляр rssmailfeeds.RSSFeed."""
+
+    maxlen = MAX_LONG_DESCRIPTION_CHARS if feed.longdesc else MAX_SHORT_DESCRIPTION_CHARS
 
     msgbody = [u'<h2>%s</h2>\n' % feed.title]
 
     for item in feed.items:
         fdesc = HTMLText(u'<br>').to_text(item.description)
-        if len(fdesc) > MAX_DESCRIPTION_CHARS:
-            fdesc = fdesc[:MAX_DESCRIPTION_CHARS] + u'...'
+        if len(fdesc) > maxlen:
+            fdesc = fdesc[:maxlen] + u'...'
         if not fdesc:
             fdesc = u'&nbsp;'
 
@@ -185,7 +187,11 @@ def list_feeds(env, feedSources):
 
     buf = []
     for ix, feed in enumerate(feedSources, 1):
-        s = u'%3d|%s|%s' % (ix, 'Y' if feed.skip else 'N', feed.title)
+        s = u'%3d|%s|%s|%s' % (ix,
+            'Y' if feed.skip else 'N',
+            'L' if feed.longdesc else 'S',
+            feed.title)
+
         buf.append(s)
 
         w = len(s)
@@ -229,6 +235,22 @@ def disable_feeds(env, feedSources, opts, flag):
 
     for ix in nums:
         feedSources[ix].skip = flag
+
+    feedSources.save(env)
+
+
+def set_longdesc(env, feedSources, opts, flag):
+    if not feedSources:
+        print('No feeds. Nothing to set up')
+        exit(1)
+
+    nums, e = get_int_opts(opts, len(feedSources))
+    if e:
+        print(e)
+        exit(1)
+
+    for ix in nums:
+        feedSources[ix].longdesc = flag
 
     feedSources.save(env)
 
@@ -359,6 +381,10 @@ def main():
             delete_feeds(env, feedSources, opts)
         elif env.workMode == env.WORK_MODE_SENDMAIL:
             return(send_email(env, opts))
+        elif env.workMode == env.WORK_MODE_SHORT:
+            set_longdesc(env, feedSources, opts, False)
+        elif env.workMode == env.WORK_MODE_LONG:
+            set_longdesc(env, feedSources, opts, True)
 
         return 0
 
