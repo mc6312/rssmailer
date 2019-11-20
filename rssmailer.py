@@ -198,7 +198,7 @@ def list_feeds(env, feedSources):
         if w > maxw:
             maxw = w
 
-    print('|'.join(['No |S|Name%s' % (' ' * (maxw - 7))] * COLS))
+    print('|'.join(['No |S|L|Name%s' % (' ' * (maxw - 7))] * COLS))
     print('+'.join(['---+-+%s' % ('-' * (maxw - 3))] * COLS))
 
     ix = 0
