@@ -39,6 +39,10 @@ DOWNLOAD_TIMEOUT_MAX = 60
 DOWNLOAD_STREAMS = 10
 
 
+MAX_SHORT_DESCRIPTION_CHARS = 512
+MAX_LONG_DESCRIPTION_CHARS = 131072
+
+
 CONFIG_EXAMPLE = u"""[settings]
 ; количество одновременных загрузок (если не указано - %d)
 downloads = 10
@@ -136,6 +140,9 @@ class CfgParser(RawConfigParser):
         else:
             return default
 
+    def set_bool(self, section, option, b):
+        self.set(section, option, 'yes' if b else 'no')
+
     def get_int(self, section, option, default=0, minv=None, maxv=None):
         """Возвращает значение переменной с именем option из секции section.
         Если переменная отсутствует, возвращает default.
@@ -171,7 +178,8 @@ class RSSMailerEnvironment():
     CS_SETTINGS = u'settings'
 
     WORK_MODE_DOWNLOAD, WORK_MODE_LIST, WORK_MODE_DISABLE,\
-    WORK_MODE_ENABLE, WORK_MODE_ADD, WORK_MODE_DELETE, WORK_MODE_SENDMAIL = range(7)
+    WORK_MODE_ENABLE, WORK_MODE_ADD, WORK_MODE_DELETE, WORK_MODE_SENDMAIL,\
+    WORK_MODE_SHORT, WORK_MODE_LONG = range(9)
 
     __WORK_MODE_CMDS = {'download':WORK_MODE_DOWNLOAD,
         'list':WORK_MODE_LIST,
@@ -179,7 +187,9 @@ class RSSMailerEnvironment():
         'enable':WORK_MODE_ENABLE,
         'add':WORK_MODE_ADD,
         'delete':WORK_MODE_DELETE,
-        'sendmail':WORK_MODE_SENDMAIL}
+        'sendmail':WORK_MODE_SENDMAIL,
+        'shortdesc':WORK_MODE_SHORT,
+        'longdesc':WORK_MODE_LONG}
 
     SEND_ERROR_MAIL_DEFAULT = True
 
@@ -354,6 +364,8 @@ disable f1 [...fN]      - disable downloading of feeds with specified numbers
 enable f1 [...fN]       - enable downloading of feeds with specified numbers
 add [url "title"]       - add feeds (more than one pair url/title may be specified)
 delete f1 [...fN]       - remove specified feeds from configuration file
+shortdesc f1 [...fN],
+longdesc f1 [...fN]     - set short or long description mode for specified feeds
 sendmail <parameters>   - send email message; parameters are: subject body [attach]
                           subject - message subject
                           body - message text
