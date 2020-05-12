@@ -3,7 +3,7 @@
 
 """ rssmailerfeeds.py
 
-    Copyright 2013-2019 mc6312
+    Copyright 2013-2020 mc6312
 
     This file is part of RSSMailer.
 

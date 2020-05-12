@@ -3,7 +3,7 @@
 
 """ rssmailer.py
 
-    Copyright 2013-2019 mc6312
+    Copyright 2013-2020 mc6312
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>."""
 
 
-RELEASE = '20191120-0'
+RELEASE = '20200512-0'
 APP_TITLE = 'RSSMailer'
 APP_RELEASE = u'%s v%s' % (APP_TITLE, RELEASE)
 
@@ -263,7 +263,7 @@ def add_feeds(env, feedSources, opts):
             print('Feed "%s" already exists.')
             return 0
 
-        feedSources.append(RSSFeed(env, furl, ftitle, DOWNLOAD_TIMEOUT, False))
+        feedSources.append(RSSFeed(env, furl, ftitle, DOWNLOAD_TIMEOUT, False, False))
         return 1
 
     def __add_feeds():
